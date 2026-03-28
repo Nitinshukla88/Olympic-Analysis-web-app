@@ -1,4 +1,7 @@
 import numpy as np
+from pandas.io.formats.style import subset_args
+
+
 def medal_telly(df):
         medals = df.drop_duplicates(subset=['Team', 'NOC', 'Games', 'Year', 'City', 'Sport', 'Medal', 'Event'])
         x = medals.groupby('region').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Gold',
@@ -9,7 +12,25 @@ def medal_telly(df):
         x['Bronze'] = x['Bronze'].astype(int)
         x['total'] = x['total'].astype(int)
         return x
-
+def fetch_medal_telly(df, year, country):
+    global temp_df
+    medal_df = df.drop_duplicates(subset=['Team','NOC', 'Games', 'Year', 'City', 'Sport', 'Medal', 'Event'])
+    flag = 0
+    if year == "Overall" and country == "Overall":
+        pass
+    if year == "Overall" and country != "Overall":
+        flag = 1
+        temp_df = medal_df[medal_df['region'] == country]
+    if year != "Overall" and country == "Overall":
+        temp_df = medal_df[medal_df['Year'] == int(year)]
+    if year != "Overall" and country != "Overall":
+        temp_df = medal_df[(medal_df['Year'] == 2016) & (medal_df['region'] == country)]
+    if flag == 1:
+        x =  temp_df.groupby('Year').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Year').reset_index()
+    else :
+        x = temp_df.groupby('region').sum()[['Gold', 'Silver', 'Bronze']].sort_values('Gold', ascending=False).reset_index()
+    x['total'] = x['Gold'] + x['Silver'] + x['Bronze']
+    return x
 def country_year_list(df):
     years = df['Year'].unique().tolist()
     years.sort()
